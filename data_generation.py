@@ -89,7 +89,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--rawTrainDataPath', type=str, default='/media/csc105/Data/dataset/ms-coco/train2014', help='The raw data path.')
     parser.add_argument('--trainDataPath', type=str, default='/home/jiange/dl/tensorflow_homographynet/data/generated_data/train/', help='The train data path')
-    parser.add_argument('--trainDataNumber', type=int, default=8000, help='The data size for traininig')
+    parser.add_argument('--trainDataNumber', type=int, default=5000, help='The data size for traininig')
 
     parser.add_argument('--rawValDataPath', type=str, default='/media/csc105/Data/dataset/ms-coco/val2014', help='The raw data path.')
     parser.add_argument('--valDataPath', type=str, default='/home/jiange/dl/tensorflow_homographynet/data/generated_data/val/', help='The val data path')
@@ -103,9 +103,9 @@ def main():
     args = parser.parse_args()
     print('<================= Generating homography =================>\n')
 
-    # dataCollection(args.rawTrainDataPath, args.trainDataPath, args.trainDataNumber, 4)
+    dataCollection(args.rawTrainDataPath, args.trainDataPath, args.trainDataNumber, 8)
 
-    dataCollection(args.rawValDataPath, args.valDataPath, args.valDataNumber, 4)
+    # dataCollection(args.rawValDataPath, args.valDataPath, args.valDataNumber, 4)
 
     # dataCollection(args.rawTestDataPath, args.testDataPath, args.testDataNumber, 1)
 
