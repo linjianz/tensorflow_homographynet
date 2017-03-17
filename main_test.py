@@ -6,25 +6,12 @@ import numpy as np
 from models.homographynet import HomographyNet as HomoNet
 
 
-iter_max = 90000
-batch_size = 64
+iter_max = 1
+batch_size = 1
 pairs_per_img = 1
-lr_base = 0.005
-lr_decay_iter = 20000
 
-dir_train = '/media/csc105/Data/dataset/ms-coco/train2014'  # dir of train2014
-dir_val = '/media/csc105/Data/dataset/ms-coco/val2014'  # dir of val2014
-
-dir_model = 'model/20170317_1/'  # dir of model to be saved
-log_train = 'log/train_1'  # dir of train loss to be saved
-log_val = 'log/val_1'  # dir of val loss to be saved
-
-if not os.path.exists(dir_model):
-    os.mkdir(dir_model)
-if not os.path.exists(log_train):
-    os.mkdir(log_train)
-if not os.path.exists(log_val):
-    os.mkdir(log_val)
+dir_test = '/media/csc105/Data/dataset/ms-coco/test2014'
+dir_model = 'model/20170317/model_5000.ckpt'
 
 
 def load_data(raw_data_path):
@@ -46,13 +33,13 @@ def generate_data(img_path):
     data = []
     label = []
     random_list = []
-    img = cv2.resize(cv2.imread(img_path, 0), (320, 240))
+    img = cv2.resize(cv2.imread(img_path, 0), (640, 480))
     i = 1
     while i < pairs_per_img + 1:
-        y_start = random.randint(32, 80)
-        y_end = y_start + 128
-        x_start = random.randint(32, 160)
-        x_end = x_start + 128
+        y_start = random.randint(64, 160)
+        y_end = y_start + 256
+        x_start = random.randint(64, 320)
+        x_end = x_start + 256
 
         y_1 = y_start
         x_1 = x_start
@@ -65,14 +52,14 @@ def generate_data(img_path):
 
         img_patch = img[y_start:y_end, x_start:x_end]  # patch 1
 
-        y_1_offset = random.randint(-32, 32)
-        x_1_offset = random.randint(-32, 32)
-        y_2_offset = random.randint(-32, 32)
-        x_2_offset = random.randint(-32, 32)
-        y_3_offset = random.randint(-32, 32)
-        x_3_offset = random.randint(-32, 32)
-        y_4_offset = random.randint(-32, 32)
-        x_4_offset = random.randint(-32, 32)
+        y_1_offset = random.randint(-64, 64)
+        x_1_offset = random.randint(-64, 64)
+        y_2_offset = random.randint(-64, 64)
+        x_2_offset = random.randint(-64, 64)
+        y_3_offset = random.randint(-64, 64)
+        x_3_offset = random.randint(-64, 64)
+        y_4_offset = random.randint(-64, 64)
+        x_4_offset = random.randint(-64, 64)
 
         y_1_p = y_1 + y_1_offset
         x_1_p = x_1 + x_1_offset
@@ -87,7 +74,7 @@ def generate_data(img_path):
         pts_img_patch_perturb = np.array([[y_1_p,x_1_p],[y_2_p,x_2_p],[y_3_p,x_3_p],[y_4_p,x_4_p]]).astype(np.float32)
         h,status = cv2.findHomography(pts_img_patch, pts_img_patch_perturb, cv2.RANSAC)
 
-        img_perburb = cv2.warpPerspective(img, h, (320, 240))
+        img_perburb = cv2.warpPerspective(img, h, (640, 480))
         img_perburb_patch = img_perburb[y_start:y_end, x_start:x_end]  # patch 2
         if not [y_1,x_1,y_2,x_2,y_3,x_3,y_4,x_4] in random_list:
             data.append(img_patch)
@@ -104,14 +91,13 @@ class DataSet(object):
     def __init__(self, img_path_list):
         self.img_path_list = img_path_list
         self.index_in_epoch = 0
-        self.number = len(img_path_list)
 
     def next_batch(self):
         data_batch = []
         label_batch = []
         start = self.index_in_epoch
         self.index_in_epoch += batch_size / pairs_per_img
-        if self.index_in_epoch > self.number:
+        if self.index_in_epoch > 50000:
             self.index_in_epoch = 0
             start = self.index_in_epoch
             self.index_in_epoch += batch_size / pairs_per_img
@@ -127,20 +113,17 @@ class DataSet(object):
 
 def main(_):
 
-    train_img_list = load_data(dir_train)
-    val_img_list = load_data(dir_val)
+    test_img_list = load_data(dir_test)
 
-    x1 = tf.placeholder(tf.float32, [None, 128, 128, 2])
+    x1 = tf.placeholder(tf.float32, [None, 256, 256, 2])
     x2 = tf.placeholder(tf.float32, [None, 8])
-    x3 = tf.placeholder(tf.float32, [])
     net = HomoNet({'data': x1})
     net_out = net.layers['fc2']
 
     loss = tf.sqrt(tf.reduce_sum(tf.square(tf.sub(net_out, x2))) / 2 / batch_size)
-    train_op = tf.train.MomentumOptimizer(learning_rate=x3, momentum=0.9).minimize(loss)
 
     # tensor board
-    tf.scalar_summary('loss',loss)  # record loss
+    tf.scalar_summary('loss', loss)  # record loss
     merged = tf.merge_all_summaries()
 
     # gpu configuration
@@ -151,38 +134,17 @@ def main(_):
     init = tf.initialize_all_variables()
     saver = tf.train.Saver()
     with tf.Session(config=tf_config) as sess:
+        saver.restore(sess, dir_model)
 
-        writer_train = tf.train.SummaryWriter(log_train, sess.graph)  # use writer1 to record loss when train
-        writer_val = tf.train.SummaryWriter(log_val, sess.graph)  # use writer2 to record loss when val
+        writer_test = tf.train.SummaryWriter("log/test/", sess.graph)  # use writer to record loss when test
 
-        train_model = DataSet(train_img_list)
-        val_model = DataSet(val_img_list)
-        x_batch_val, y_batch_val = val_model.next_batch()  # fix the val data
-
+        test_model = DataSet(test_img_list)
         sess.run(init)
-
         for i in range(iter_max):
-            lr_decay = 0.1 ** (i/lr_decay_iter)
-            lr = lr_base * lr_decay
-            x_batch_train, y_batch_train = train_model.next_batch()
-            sess.run(train_op, feed_dict={x1: x_batch_train, x2: y_batch_train, x3: lr})
-
-            # display
-            if not (i+1) % 50:
-                result, loss_train = sess.run([merged, loss], feed_dict={x1: x_batch_train, x2: y_batch_train, x3: lr})
-                print ('iter %05d, train loss = %.5f' % ((i+1), loss_train))
-                writer_train.add_summary(result, i+1)
-
-            if not (i+1) % 200:
-                result, loss_val = sess.run([merged, loss], feed_dict={x1: x_batch_val, x2: y_batch_val, x3: lr})
-                print "===================="
-                print ('iter %05d, val loss = %.5f' % ((i+1), loss_val))
-                print "===================="
-                writer_val.add_summary(result, i+1)
-
-            # save model
-            if not (i+1) % 5000:
-                saver.save(sess, (dir_model + "model_%d.ckpt") % (i+1))
+            x_batch_test, y_batch_test = test_model.next_batch()
+            result, loss_test = sess.run([merged, loss], feed_dict={x1: x_batch_test, x2: y_batch_test})
+            print ('iter %05d, test loss = %.5f' % ((i+1), loss_test))
+            writer_test.add_summary(result, i+1)
 
 
 if __name__ == "__main__":
