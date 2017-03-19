@@ -1,6 +1,10 @@
 # PyCharm files
 .idea
 .directory
+
+# files
 data
 model
 log
+
+*.pyc
