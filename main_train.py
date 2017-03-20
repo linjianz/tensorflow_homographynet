@@ -9,15 +9,15 @@ import shutil
 iter_max = 90000
 batch_size = 64
 pairs_per_img = 1
-lr_base = 0.005
+lr_base = 1e-5
 lr_decay_iter = 30000
 
 dir_train = '/media/csc105/Data/dataset/ms-coco/train2014'  # dir of train2014
 dir_val = '/media/csc105/Data/dataset/ms-coco/val2014'  # dir of val2014
 
-dir_model = 'model/20170319_1'  # dir of model to be saved
-log_train = 'log/train_0319_1'  # dir of train loss to be saved
-log_val = 'log/val_0319_1'  # dir of val loss to be saved
+dir_model = 'model/20170320_1'  # dir of model to be saved
+log_train = 'log/train_0320_1'  # dir of train loss to be saved
+log_val = 'log/val_0320_1'  # dir of val loss to be saved
 
 if os.path.exists(dir_model):
     shutil.rmtree(dir_model)
@@ -47,12 +47,14 @@ def load_data(raw_data_path):
 
 
 def generate_data(img_path):
-    data = []
-    label = []
+    data_re = []
+    label_re = []
     random_list = []
     img = cv2.resize(cv2.imread(img_path, 0), (320, 240))
     i = 1
     while i < pairs_per_img + 1:
+        data = []
+        label = []
         y_start = random.randint(32, 80)
         y_end = y_start + 128
         x_start = random.randint(32, 160)
@@ -95,24 +97,28 @@ def generate_data(img_path):
         img_perburb_patch = img_perburb[y_start:y_end, x_start:x_end]  # patch 2
         if not [y_1,x_1,y_2,x_2,y_3,x_3,y_4,x_4] in random_list:
             data.append(img_patch)
-            data.append(img_perburb_patch)
+            data.append(img_perburb_patch)  # [2, 128, 128]
             random_list.append([y_1,x_1,y_2,x_2,y_3,x_3,y_4,x_4])
-            h_4pt = np.array([y_1_offset,x_1_offset,y_2_offset,x_2_offset,y_3_offset,x_3_offset,y_4_offset,x_4_offset])
-            # h_4pt = np.array([y_1_p,x_1_p,y_2_p,x_2_p,y_3_p,x_3_p,y_4_p,x_4_p])  # labels
-            label.append(h_4pt)
+            #h_4pt = np.array([y_1_offset,x_1_offset,y_2_offset,x_2_offset,y_3_offset,x_3_offset,y_4_offset,x_4_offset])
+            h_4pt = np.array([y_1_p,x_1_p,y_2_p,x_2_p,y_3_p,x_3_p,y_4_p,x_4_p])  # labels
+            label.append(h_4pt)  # [1, 8]
             i += 1
-    return data, label
+        data_re.append(data)  # [4, 2, 128, 128]
+        label_re.append(label)  # [4, 1, 8]
+
+    return data_re, label_re
 
 
 class DataSet(object):
     def __init__(self, img_path_list):
         self.img_path_list = img_path_list
         self.index_in_epoch = 0
+        self.count = 0
         self.number = len(img_path_list)
 
     def next_batch(self):
-        data_batch = []
-        label_batch = []
+        self.count += 1
+        # print self.count
         start = self.index_in_epoch
         self.index_in_epoch += batch_size / pairs_per_img
         if self.index_in_epoch > self.number:
@@ -121,12 +127,18 @@ class DataSet(object):
             self.index_in_epoch += batch_size / pairs_per_img
         end = self.index_in_epoch
 
-        for i in range(start, end):
-            data, label = generate_data(self.img_path_list[i])
-            data_batch.append(data)
-            label_batch.append(label)
+        data_batch, label_batch = generate_data(self.img_path_list[start])
+        for i in range(start+1, end):
+            data, label = generate_data(self.img_path_list[i])  # [4, 2, 128, 128], [4, 1, 8]
+            data_batch = np.concatenate((data_batch, data))  # [64, 2, 128, 128]
+            label_batch = np.concatenate((label_batch, label))  # [64, 1, 8]
 
-        return np.reshape(data_batch, [batch_size, 128, 128, 2]), np.reshape(label_batch, [batch_size, 8])
+        data_batch = np.array(data_batch).transpose([0, 2, 3, 1])  # (64, 128, 128, 2)
+        # cv2.imshow('window2', data_batch[1,:,:,1].squeeze())
+        # cv2.waitKey()
+        label_batch = np.array(label_batch).squeeze()  # (64, 1, 8)
+
+        return data_batch, label_batch
 
 
 def main(_):
@@ -140,7 +152,7 @@ def main(_):
     net = HomoNet({'data': x1})
     net_out = net.layers['fc2']
 
-    loss = tf.sqrt(tf.reduce_sum(tf.square(tf.sub(net_out, x2))) / 2 / batch_size)
+    loss = tf.reduce_sum(tf.square(tf.sub(net_out, x2))) / 2 / batch_size
     train_op = tf.train.MomentumOptimizer(learning_rate=x3, momentum=0.9).minimize(loss)
 
     # tensor board
@@ -155,6 +167,7 @@ def main(_):
     init = tf.initialize_all_variables()
     saver = tf.train.Saver()
 
+    # with tf.device('/gpu:1'):
     with tf.Session(config=tf_config) as sess:
         sess.run(init)
         writer_train = tf.train.SummaryWriter(log_train, sess.graph)  # use writer1 to record loss when train

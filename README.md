@@ -12,3 +12,6 @@ for each image, generate 8 pairs of samples
 
 ## main_test.py
 for each image, test the loss of generated sample
+
+## train_2.py
+use data_generation.py to generate images first. Then start train

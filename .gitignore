@@ -5,6 +5,8 @@
 # files
 data
 model
+model_2
 log
+log_2
 
 *.pyc
