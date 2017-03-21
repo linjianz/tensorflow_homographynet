@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+slim = tf.contrib.slim
 
 DEFAULT_PADDING = 'SAME'
 
@@ -31,7 +32,7 @@ def layer(op):
 
 class Network(object):
 
-    def __init__(self, inputs, trainable=True):
+    def __init__(self, inputs, trainable=True, is_training=False):
         # The input nodes for this network
         self.inputs = inputs
         # The current list of terminal nodes
@@ -44,9 +45,9 @@ class Network(object):
         self.use_dropout = tf.placeholder_with_default(tf.constant(1.0),
                                                        shape=[],
                                                        name='use_dropout')
-        self.setup()
+        self.setup(is_training)
 
-    def setup(self):
+    def setup(self, is_training):
         '''Construct the network. '''
         raise NotImplementedError('Must be implemented by the subclass.')
 
@@ -145,6 +146,48 @@ class Network(object):
             return output
 
     @layer
+    def atrous_conv(self,
+                    input,
+                    k_h,
+                    k_w,
+                    c_o,
+                    dilation,
+                    name,
+                    relu=True,
+                    padding=DEFAULT_PADDING,
+                    group=1,
+                    biased=True):
+        # Verify that the padding is acceptable
+        self.validate_padding(padding)
+        # Get the number of channels in the input
+        c_i = input.get_shape()[-1]
+        # Verify that the grouping parameter is valid
+        assert c_i % group == 0
+        assert c_o % group == 0
+        # Convolution for a given input and kernel
+        convolve = lambda i, k: tf.nn.atrous_conv2d(i, k, dilation, padding=padding)
+        with tf.variable_scope(name) as scope:
+            kernel = self.make_var('weights', shape=[k_h, k_w, c_i / group, c_o])
+            if group == 1:
+                # This is the common-case. Convolve the input without any further complications.
+                output = convolve(input, kernel)
+            else:
+                # Split the input into groups and then convolve each of them independently
+                input_groups = tf.split(3, group, input)
+                kernel_groups = tf.split(3, group, kernel)
+                output_groups = [convolve(i, k) for i, k in zip(input_groups, kernel_groups)]
+                # Concatenate the groups
+                output = tf.concat(3, output_groups)
+            # Add the biases
+            if biased:
+                biases = self.make_var('biases', [c_o])
+                output = tf.nn.bias_add(output, biases)
+            if relu:
+                # ReLU non-linearity
+                output = tf.nn.relu(output, name=scope.name)
+            return output
+
+    @layer
     def relu(self, input, name):
         return tf.nn.relu(input, name=name)
 
@@ -177,7 +220,7 @@ class Network(object):
 
     @layer
     def concat(self, inputs, axis, name):
-        return tf.concat(axis, inputs, name=name)
+        return tf.concat(concat_dim=axis, values=inputs, name=name)
 
     @layer
     def add(self, inputs, name):
@@ -215,27 +258,15 @@ class Network(object):
         return tf.nn.softmax(input, name)
 
     @layer
-    def batch_normalization(self, input, name, scale_offset=True, relu=False):
-        # NOTE: Currently, only inference is supported
+    def batch_normalization(self, input, name, is_training, activation_fn=None, scale=True):
         with tf.variable_scope(name) as scope:
-            shape = [input.get_shape()[-1]]
-            if scale_offset:
-                scale = self.make_var('scale', shape=shape)
-                offset = self.make_var('offset', shape=shape)
-            else:
-                scale, offset = (None, None)
-            output = tf.nn.batch_normalization(
+            output = slim.batch_norm(
                 input,
-                mean=self.make_var('mean', shape=shape),
-                variance=self.make_var('variance', shape=shape),
-                offset=offset,
+                activation_fn=activation_fn,
+                is_training=is_training,
+                updates_collections=None,
                 scale=scale,
-                # TODO: This is the default Caffe batch norm eps
-                # Get the actual eps from parameters
-                variance_epsilon=1e-5,
-                name=name)
-            if relu:
-                output = tf.nn.relu(output)
+                scope=scope)
             return output
 
     @layer
