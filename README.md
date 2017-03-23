@@ -7,11 +7,11 @@ ms-coco
 > val2014: 40504 images  
 > test2014: 40775 images  
 
-## main_train.py
-for each image, generate 8 pairs of samples
+## train_mycnn.py
+use the cnn network by myself for train  
 
-## main_test.py
-for each image, test the loss of generated sample
+## main.py
+use existing cnn framework for training, dropout & bn the matter  
 
 ## train_2.py
 use data_generation.py to generate images first. Then start train

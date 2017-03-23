@@ -9,15 +9,16 @@ iter_max = 90000
 save_iter = 2000
 batch_size = 64
 pairs_per_img = 1
-lr_base = 5e-6
+lr_base = 1e-6
 lr_decay_iter = 200000
 
 dir_train = '/media/csc105/Data/dataset/ms-coco/train2014'  # dir of train2014
 dir_val = '/media/csc105/Data/dataset/ms-coco/val2014'  # dir of val2014
 
-dir_model = 'model/20170321_4'  # dir of model to be saved
-log_train = 'log/train_0321_4'  # dir of train loss to be saved
-log_val = 'log/val_0321_4'  # dir of val loss to be saved
+dir_load = 'model_mycnn/20170322_2/model_90000.ckpt'
+dir_model = 'model_mycnn/20170323_1'  # dir of model to be saved
+log_train = 'log_mycnn/train_0323_1'  # dir of train loss to be saved
+log_val = 'log_mycnn/val_0323_1'  # dir of val loss to be saved
 
 if os.path.exists(dir_model):
     shutil.rmtree(dir_model)
@@ -272,7 +273,7 @@ def main(_):
 
     with tf.Session(config=tf_config) as sess:
         # sess.run(init)
-        saver.restore(sess, 'model/20170321_3/model_4000.ckpt')
+        saver.restore(sess, dir_load)
         writer_train = tf.train.SummaryWriter(log_train, sess.graph)  # use writer1 to record loss when train
         writer_val = tf.train.SummaryWriter(log_val, sess.graph)  # use writer2 to record loss when val
 

@@ -10,15 +10,15 @@ iter_max = 90000
 save_iter = 2000
 batch_size = 64
 pairs_per_img = 1
-lr_base = 5e-5
-lr_decay_iter = 20000
+lr_base = 5e-3
+lr_decay_iter = 200000
 
 dir_train = '/media/csc105/Data/dataset/ms-coco/train2014'  # dir of train2014
 dir_val = '/media/csc105/Data/dataset/ms-coco/val2014'  # dir of val2014
 
-dir_model = 'model/20170321_4'  # dir of model to be saved
-log_train = 'log/train_0321_4'  # dir of train loss to be saved
-log_val = 'log/val_0321_4'  # dir of val loss to be saved
+dir_model = 'model_net/20170322_1'  # dir of model to be saved
+log_train = 'log_net/train_0322_1'  # dir of train loss to be saved
+log_val = 'log_net/val_0322_1'  # dir of val loss to be saved
 
 if os.path.exists(dir_model):
     shutil.rmtree(dir_model)
@@ -166,13 +166,15 @@ def main(_):
 
     # tensor board
     tf.scalar_summary('loss',loss)  # record loss
-    tf.histogram_summary('', )
+    tf.summary.histogram('t0', tvars[0])
+    tf.summary.histogram('t1', tvars[1])
+    tf.summary.histogram('t34', tvars[34])
+    tf.summary.histogram('t35', tvars[35])
     merged = tf.merge_all_summaries()
 
     # gpu configuration
     tf_config = tf.ConfigProto()
     tf_config.gpu_options.allow_growth = True
-
     # gpu_opinions = tf.GPUOptions(per_process_gpu_memory_fraction=0.333)
 
     init = tf.initialize_all_variables()
@@ -181,7 +183,6 @@ def main(_):
     with tf.Session(config=tf_config) as sess:
 
         sess.run(init)
-
         writer_train = tf.train.SummaryWriter(log_train, sess.graph)  # use writer1 to record loss when train
         writer_val = tf.train.SummaryWriter(log_val, sess.graph)  # use writer2 to record loss when val
 
@@ -196,15 +197,14 @@ def main(_):
             sess.run(train_op, feed_dict={x1: x_batch_train, x2: y_batch_train, x3: lr, x4: 1.0})
 
             # display
-            if not (i+1) % 1:
-                # print sess.run(tvars[35])
+            if not (i+1) % 5:
                 result1, loss_train = sess.run([merged, loss], feed_dict={x1: x_batch_train, x2: y_batch_train, x4: 0.0})
-                print ('iter %05d, lr = %.5f, train loss = %.5f' % ((i+1), lr, loss_train))
+                print ('iter %05d, lr = %.8f, train loss = %.5f' % ((i+1), lr, loss_train))
                 writer_train.add_summary(result1, i+1)
 
-            if not (i+1) % 1:
+            if not (i+1) % 20:
                 result2, loss_val = sess.run([merged, loss], feed_dict={x1: x_batch_val, x2: y_batch_val, x4: 0.0})
-                print ('iter %05d, lr = %.5f, val   loss = %.5f' % ((i+1), lr, loss_val))
+                print ('iter %05d, lr = %.8f, val   loss = %.5f' % ((i+1), lr, loss_val))
                 print "============================"
                 writer_val.add_summary(result2, i+1)
 
