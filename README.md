@@ -1,7 +1,7 @@
 # Homographynet
 This is an implementation of the paper [Deep Image Homography Estimation](https://arxiv.org/pdf/1606.03798.pdf) with tensorflow
 
-## dataset
+## Dataset
 ms-coco 
 
 | dataset | image numbers |
@@ -20,8 +20,8 @@ Then use data_process.m to visulize the results.
 ### train_net.py
 Use existing cnn framework for training, something wrong ~v~.
 ### data_generation.py
-if you like, just generate the training data.
-## result
+If you like, just generate the training data.
+## Result
 I test 200 images on test2014, Mean Corner Error = 12.6578 (image size is 320x240).  
 The original thesis is 9.2 (image size is 640x480). But I believe my result could be better.  
 good example:  
