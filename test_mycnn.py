@@ -11,9 +11,11 @@ import shutil
 iter_max = 200
 batch_size = 1
 
+dir0 = '20170330_0'  # change to your own dir
+
 dir_test = '/media/csc105/Data/dataset/ms-coco/test2014'  # dir of test2014
 dir_load = 'model/model_mycnn/20170322_2/model_90000.ckpt'
-dir_save = 'test/test_mycnn/20170229_test200'
+dir_save = 'test/test_mycnn/' + dir0
 
 if os.path.exists(dir_save):
     shutil.rmtree(dir_save)
@@ -165,24 +167,22 @@ class DataSet(object):
 
 
 class Mycnn(object):
-    def __init__(self, img, keep_pro):
+    def __init__(self, img, keep_pro, bn_in):
         # conv1 conv2 maxpooling
         w1 = tf.Variable(tf.truncated_normal([3,3,2,64], stddev=0.1))
         b1 = tf.Variable(tf.constant(0.1, shape=[64]))
         conv1 = tf.nn.conv2d(img, w1, strides=[1,1,1,1], padding='SAME') + b1
-        mean1, var1 = tf.nn.moments(conv1, axes=[0, 1, 2])
         offset1 = tf.Variable(tf.constant(0.0, shape=[64]))
         scale1 = tf.Variable(tf.constant(1.0, shape=[64]))
-        bn1 = tf.nn.batch_normalization(conv1, mean=mean1, variance=var1, offset=offset1, scale=scale1, variance_epsilon=1e-5)
+        bn1 = tf.nn.batch_normalization(conv1, bn_in[0], bn_in[1], offset=offset1, scale=scale1, variance_epsilon=1e-5)
         relu1 = tf.nn.relu(bn1)
 
         w2 = tf.Variable(tf.truncated_normal([3,3,64,64], stddev=0.1))
         b2 = tf.Variable(tf.constant(0.1, shape=[64]))
         conv2 = tf.nn.conv2d(relu1, w2, strides=[1,1,1,1], padding='SAME') + b2
-        mean2, var2 = tf.nn.moments(conv2, axes=[0, 1, 2])
         offset2 = tf.Variable(tf.constant(0.0, shape=[64]))
         scale2 = tf.Variable(tf.constant(1.0, shape=[64]))
-        bn2 = tf.nn.batch_normalization(conv2, mean=mean2, variance=var2, offset=offset2, scale=scale2, variance_epsilon=1e-5)
+        bn2 = tf.nn.batch_normalization(conv2, bn_in[2], bn_in[3], offset=offset2, scale=scale2, variance_epsilon=1e-5)
         relu2 = tf.nn.relu(bn2)
         maxpool1 = tf.nn.max_pool(relu2, ksize=[1,2,2,1], strides=[1,2,2,1],padding='VALID')
 
@@ -190,19 +190,17 @@ class Mycnn(object):
         w3 = tf.Variable(tf.truncated_normal([3,3,64,64], stddev=0.1))
         b3 = tf.Variable(tf.constant(0.1, shape=[64]))
         conv3 = tf.nn.conv2d(maxpool1, w3, strides=[1,1,1,1], padding='SAME') + b3
-        mean3, var3 = tf.nn.moments(conv3, axes=[0, 1, 2])
         offset3 = tf.Variable(tf.constant(0.0, shape=[64]))
         scale3 = tf.Variable(tf.constant(1.0, shape=[64]))
-        bn3 = tf.nn.batch_normalization(conv3, mean=mean3, variance=var3, offset=offset3, scale=scale3, variance_epsilon=1e-5)
+        bn3 = tf.nn.batch_normalization(conv3, bn_in[4], bn_in[5], offset=offset3, scale=scale3, variance_epsilon=1e-5)
         relu3 = tf.nn.relu(bn3)
 
         w4 = tf.Variable(tf.truncated_normal([3,3,64,64], stddev=0.1))
         b4 = tf.Variable(tf.constant(0.1, shape=[64]))
         conv4 = tf.nn.conv2d(relu3, w4, strides=[1,1,1,1], padding='SAME') + b4
-        mean4, var4 = tf.nn.moments(conv4, axes=[0, 1, 2])
         offset4 = tf.Variable(tf.constant(0.0, shape=[64]))
         scale4 = tf.Variable(tf.constant(1.0, shape=[64]))
-        bn4 = tf.nn.batch_normalization(conv4, mean=mean4, variance=var4, offset=offset4, scale=scale4, variance_epsilon=1e-5)
+        bn4 = tf.nn.batch_normalization(conv4, bn_in[6], bn_in[7], offset=offset4, scale=scale4, variance_epsilon=1e-5)
         relu4 = tf.nn.relu(bn4)
         maxpool2 = tf.nn.max_pool(relu4, ksize=[1,2,2,1], strides=[1,2,2,1],padding='VALID')
 
@@ -210,19 +208,17 @@ class Mycnn(object):
         w5 = tf.Variable(tf.truncated_normal([3,3,64,128], stddev=0.1))
         b5 = tf.Variable(tf.constant(0.1, shape=[128]))
         conv5 = tf.nn.conv2d(maxpool2, w5, strides=[1,1,1,1], padding='SAME') + b5
-        mean5, var5 = tf.nn.moments(conv5, axes=[0, 1, 2])
         offset5 = tf.Variable(tf.constant(0.0, shape=[128]))
         scale5 = tf.Variable(tf.constant(1.0, shape=[128]))
-        bn5 = tf.nn.batch_normalization(conv5, mean=mean5, variance=var5, offset=offset5, scale=scale5, variance_epsilon=1e-5)
+        bn5 = tf.nn.batch_normalization(conv5, bn_in[8], bn_in[9], offset=offset5, scale=scale5, variance_epsilon=1e-5)
         relu5 = tf.nn.relu(bn5)
 
         w6 = tf.Variable(tf.truncated_normal([3,3,128,128], stddev=0.1))
         b6 = tf.Variable(tf.constant(0.1, shape=[128]))
         conv6 = tf.nn.conv2d(relu5, w6, strides=[1,1,1,1], padding='SAME') + b6
-        mean6, var6 = tf.nn.moments(conv6, axes=[0, 1, 2])
         offset6 = tf.Variable(tf.constant(0.0, shape=[128]))
         scale6 = tf.Variable(tf.constant(1.0, shape=[128]))
-        bn6 = tf.nn.batch_normalization(conv6, mean=mean6, variance=var6, offset=offset6, scale=scale6, variance_epsilon=1e-5)
+        bn6 = tf.nn.batch_normalization(conv6, bn_in[10], bn_in[11], offset=offset6, scale=scale6, variance_epsilon=1e-5)
         relu6 = tf.nn.relu(bn6)
         maxpool3 = tf.nn.max_pool(relu6, ksize=[1,2,2,1], strides=[1,2,2,1],padding='VALID')
 
@@ -230,19 +226,17 @@ class Mycnn(object):
         w7 = tf.Variable(tf.truncated_normal([3,3,128,128], stddev=0.1))
         b7 = tf.Variable(tf.constant(0.1, shape=[128]))
         conv7 = tf.nn.conv2d(maxpool3, w7, strides=[1,1,1,1], padding='SAME') + b7
-        mean7, var7 = tf.nn.moments(conv7, axes=[0, 1, 2])
         offset7 = tf.Variable(tf.constant(0.0, shape=[128]))
         scale7 = tf.Variable(tf.constant(1.0, shape=[128]))
-        bn7 = tf.nn.batch_normalization(conv7, mean=mean7, variance=var7, offset=offset7, scale=scale7, variance_epsilon=1e-5)
+        bn7 = tf.nn.batch_normalization(conv7, bn_in[12], bn_in[13], offset=offset7, scale=scale7, variance_epsilon=1e-5)
         relu7 = tf.nn.relu(bn7)
 
         w8 = tf.Variable(tf.truncated_normal([3,3,128,128], stddev=0.1))
         b8 = tf.Variable(tf.constant(0.1, shape=[128]))
         conv8 = tf.nn.conv2d(relu7, w8, strides=[1,1,1,1], padding='SAME') + b8
-        mean8, var8 = tf.nn.moments(conv6, axes=[0, 1, 2])
         offset8 = tf.Variable(tf.constant(0.0, shape=[128]))
         scale8 = tf.Variable(tf.constant(1.0, shape=[128]))
-        bn8 = tf.nn.batch_normalization(conv8, mean=mean8, variance=var8, offset=offset8, scale=scale8, variance_epsilon=1e-5)
+        bn8 = tf.nn.batch_normalization(conv8, bn_in[14], bn_in[15], offset=offset8, scale=scale8, variance_epsilon=1e-5)
         relu8 = tf.nn.relu(bn8)
         dropout1 = tf.nn.dropout(relu8, keep_pro)
 
@@ -259,10 +253,12 @@ class Mycnn(object):
 
 def main(_):
     test_img_list = load_data(dir_test)
+    mean_var = np.load('log/log_mycnn/mean_var_out.npz')
+
     x1 = tf.placeholder(tf.float32, [None, 128, 128, 2])  # data
     x2 = tf.placeholder(tf.float32, [None, 8])  # label
     x4 = tf.placeholder(tf.float32, [])  # dropout
-    net = Mycnn(x1, x4)
+    net = Mycnn(x1, x4, bn_in=mean_var.f.arr_0)
     fc2 = net.out
 
     loss = tf.reduce_sum(tf.square(tf.sub(fc2, x2))) / 2 / batch_size

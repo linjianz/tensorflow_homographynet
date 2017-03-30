@@ -15,7 +15,7 @@ pairs_per_img = 1  # keep 1 is better
 lr_base = 5e-6
 lr_decay_iter = 200000  # lr/10 iters
 
-dir0 = '20170329_1'  # change to your own dir
+dir0 = '20170330_1'  # change to your own dir
 
 dir_train = '/media/csc105/Data/dataset/ms-coco/train2014'  # dir of train2014
 dir_val = '/media/csc105/Data/dataset/ms-coco/val2014'  # dir of val2014
@@ -151,6 +151,7 @@ class DataSet(object):
 
 class Mycnn(object):
     def __init__(self, img, keep_pro):
+
         # conv1 conv2 maxpooling
         w1 = tf.Variable(tf.truncated_normal([3,3,2,64], stddev=0.1))
         b1 = tf.Variable(tf.constant(0.1, shape=[64]))
@@ -240,39 +241,29 @@ class Mycnn(object):
         w_fc2 = tf.Variable(tf.truncated_normal([1024,8], stddev=0.1))
         b_fc2 = tf.Variable(tf.constant(0.1, shape=[8]))
         self.out = tf.matmul(dropout2, w_fc2) + b_fc2
-
-
-def variable_summaries(var):
-    mean = tf.reduce_mean(var)
-    tf.summary.scalar('mean', mean)
-    stddev = tf.sqrt(tf.reduce_sum(tf.square(var-mean)))
-    tf.summary.scalar('stddev', stddev)
-    tf.summary.scalar('max', tf.reduce_max(var))
-    tf.summary.scalar('min', tf.reduce_min(var))
-    tf.summary.histogram('histogram',var)
+        self.mean_var = [mean1,var1,mean2,var2,mean3,var3,mean4,var4,mean5,var5,mean6,var6,mean7,var7,mean8,var8]
+        # mean_var is used in test process
 
 
 def main(_):
     train_img_list = load_data(dir_train)
     val_img_list = load_data(dir_val)
 
-    x1 = tf.placeholder(tf.float32, [None, 128, 128, 2])
-    x2 = tf.placeholder(tf.float32, [None, 8])
-    x3 = tf.placeholder(tf.float32, [])
-    x4 = tf.placeholder(tf.float32, [])
+    x1 = tf.placeholder(tf.float32, [None, 128, 128, 2])  # data
+    x2 = tf.placeholder(tf.float32, [None, 8])  # label
+    x3 = tf.placeholder(tf.float32, [])  # lr
+    x4 = tf.placeholder(tf.float32, [])  # dropout keep_prob
 
     net = Mycnn(x1, x4)
     fc2 = net.out
+    # mean_var = net.mean_var
+    # when training is over, use np.savez('mean_var.npz', mean_var) to save the data
 
     loss = tf.reduce_sum(tf.square(tf.sub(fc2, x2))) / 2 / batch_size
     train_op = tf.train.MomentumOptimizer(learning_rate=x3, momentum=0.9).minimize(loss)
 
     # tensor board
     tf.summary.scalar('loss', loss)  # record loss
-    # tf.summary.histogram('w1', w1)
-    # tf.summary.histogram('b1', b1)
-    # tf.summary.histogram('w_fc1', w_fc1)
-    # tf.summary.histogram('b_fc1', b_fc1)
     merged = tf.merge_all_summaries()
 
     # gpu configuration
@@ -302,12 +293,12 @@ def main(_):
             sess.run(train_op, feed_dict={x1: x_batch_train, x2: y_batch_train, x3: lr, x4: 0.5})
 
             # display
-            if not (i+1) % 1:
+            if not (i+1) % 50:
                 result1, loss_train = sess.run([merged, loss], feed_dict={x1: x_batch_train, x2: y_batch_train, x4: 1.0})
                 print ('iter %05d, lr = %.8f, train loss = %.5f' % ((i+1), lr, loss_train))
                 writer_train.add_summary(result1, i+1)
 
-            if not (i+1) % 1:
+            if not (i+1) % 200:
                 result2, loss_val = sess.run([merged, loss], feed_dict={x1: x_batch_val, x2: y_batch_val, x4: 1.0})
                 print ('iter %05d, lr = %.8f, val   loss = %.5f' % ((i+1), lr, loss_val))
                 print "============================"

@@ -1,8 +1,8 @@
 function data_process
     clear;clc;clf;
-    dir0 = 'test_mycnn/20170229_test200/';
+    dir0 = 'test_mycnn/20170330_bn/';
 %     calculate_mean_error(dir0)
-    for_show(dir0, 5)
+    for_show(dir0, 112)
 end
 
 function mean_error = calculate_mean_error(dir_test)
