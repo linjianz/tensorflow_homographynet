@@ -4,7 +4,7 @@ This is an implementation of the paper [Deep Image Homography Estimation](https:
 ## dataset
 ms-coco  
 |dataset|image number|  
-|:-:|:-:|  
+|:---:|:---:|  
 |train2014|82783|  
 |val2014|40504|  
 |test2014|40775|  
@@ -17,7 +17,7 @@ No need to pre-save the generated data, the program genetated the image pairs au
 Test only one image a time, output the four-pair offsets predicted from HomographyNet.  
 Then use data_process.m to visulize the results.  
 ### train_net.py
-use existing cnn framework for training, dropout & bn have something wrong.  
+Use existing cnn framework for training, something wrong ~v~.  
 ### data_generation.py
 if you like, just generate the training data.  
 ## result
