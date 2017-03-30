@@ -2,12 +2,14 @@
 This is an implementation of the paper [Deep Image Homography Estimation](https://arxiv.org/pdf/1606.03798.pdf) with tensorflow
 
 ## dataset
-ms-coco  
-|dataset|numbers|
-|:-:|:-:|
+ms-coco 
+
+| dataset | image numbers |
+|:---:|:---:|
 |train2014|82783|
 |val2014|40504|
 |test2014|40775|
+
 ## Program list
 ### train_mycnn.py
 Build the network according to the paper completely.  
