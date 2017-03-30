@@ -2,6 +2,9 @@
 .idea
 .directory
 
+# matlab
+*.m~
+
 # files
 data
 model
