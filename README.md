@@ -8,10 +8,13 @@ ms-coco
 > test2014: 40775 images  
 
 ## train_mycnn.py
-use the cnn network by myself for train  
+use the cnn network by myself for train, no need to pre-save the generated data  
 
-## main.py
-use existing cnn framework for training, dropout & bn the matter  
+## test_mycnn.py
+test only one image a time, output the four-pair offsets predicted from HomographyNet. Then use data_process.m to visulize the results.  
 
-## train_2.py
-use data_generation.py to generate images first. Then start train
+## train_net.py
+use existing cnn framework for training, dropout & bn have something wrong  
+
+## data_generation.py
+if you like, just generate the training data

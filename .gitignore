@@ -4,10 +4,8 @@
 
 # files
 data
-model_mycnn
-model_net
-log_mycnn
-log_net
-test
+model
+log
+test/test*
 
 *.pyc
