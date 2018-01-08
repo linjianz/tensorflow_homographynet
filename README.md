@@ -25,7 +25,7 @@ If you like, just generate the training data.
 I test 200 images on test2014, Mean Corner Error = 12.6578 (image size is 320x240).  
 The original thesis is 9.2 (image size is 640x480). But I believe my result could be better.  
 good example:  
-![1](http://i1.piimg.com/567571/490315a068fd15bd.png)  
+![](http://ogmp8tdqb.bkt.clouddn.com//18-1-8/30625113.jpg)  
 
 my result Vs. the author's result on the same image  
 ![](http://ogmp8tdqb.bkt.clouddn.com//18-1-8/40994198.jpg)  
