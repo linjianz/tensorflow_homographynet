@@ -30,6 +30,7 @@ good example:
 
 my result Vs. the author's result on the same image  
 ![](http://ogmp8tdqb.bkt.clouddn.com//18-1-8/40994198.jpg?imageView2/2/h/200/interlace/0/q/100)  
+
 ![](http://ogmp8tdqb.bkt.clouddn.com//18-1-8/43294698.jpg?imageView2/2/h/200/interlace/0/q/100)  
 
 bad example:  
