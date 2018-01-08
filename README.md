@@ -28,8 +28,8 @@ good example:
 ![1](http://i1.piimg.com/567571/490315a068fd15bd.png)  
 
 my result Vs. the author's result on the same image  
-![2](http://i1.piimg.com/567571/e822ab2e728f381b.png)  
-![2_2](http://i4.buimg.com/567571/3b9f54d83c67248a.png)  
+![](http://ogmp8tdqb.bkt.clouddn.com//18-1-8/40994198.jpg)  
+![](http://ogmp8tdqb.bkt.clouddn.com//18-1-8/43294698.jpg)  
 
 bad example:  
-![3](http://i4.buimg.com/567571/3904cd85018bcff9.png)
+![](http://ogmp8tdqb.bkt.clouddn.com//18-1-8/91429979.jpg)
