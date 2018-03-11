@@ -24,14 +24,13 @@ If you like, just generate the training data.
 ## Result
 I test 200 images on test2014, Mean Corner Error = 12.6578 (image size is 320x240).  
 The original thesis is 9.2 (image size is 640x480). But I believe my result could be better.  
-
 good example:  
-![](http://ogmp8tdqb.bkt.clouddn.com//18-1-8/30625113.jpg?imageView2/2/h/200/interlace/0/q/100)  
+![1](http://ogmp8tdqb.bkt.clouddn.com//18-3-11/23908165.jpg)
 
 my result Vs. the author's result on the same image  
-![](http://ogmp8tdqb.bkt.clouddn.com//18-1-8/40994198.jpg?imageView2/2/h/200/interlace/0/q/100)  
+![](http://ogmp8tdqb.bkt.clouddn.com//18-1-8/40994198.jpg)  
 
-![](http://ogmp8tdqb.bkt.clouddn.com//18-1-8/43294698.jpg?imageView2/2/h/200/interlace/0/q/100)  
+![](http://ogmp8tdqb.bkt.clouddn.com//18-3-11/21701013.jpg)  
 
 bad example:  
-![](http://ogmp8tdqb.bkt.clouddn.com//18-1-8/91429979.jpg?imageView2/2/h/200/interlace/0/q/100)  
+![](http://ogmp8tdqb.bkt.clouddn.com//18-1-8/91429979.jpg)
